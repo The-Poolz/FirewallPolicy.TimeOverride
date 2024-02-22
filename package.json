@@ -1,0 +1,21 @@
+{
+  "name": "web3war-fix",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.20.1",
+    "solidity-coverage": "^0.8.8"
+  },
+  "dependencies": {
+    "@poolzfinance/lockdeal-nft": "^0.8.0",
+    "@poolzfinance/poolz-helper-v2": "^2.3.5"
+  }
+}
