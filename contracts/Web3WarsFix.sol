@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.19;
 
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ILockDealNFT.sol";
 
