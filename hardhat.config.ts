@@ -1,4 +1,5 @@
 import { HardhatUserConfig } from "hardhat/config"
+import "@truffle/dashboard-hardhat-plugin"
 import "@nomicfoundation/hardhat-toolbox"
 
 const config: HardhatUserConfig = {
