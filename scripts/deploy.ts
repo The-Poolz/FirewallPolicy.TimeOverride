@@ -1,26 +1,17 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  // testnet LockDealNFT - 0xe42876a77108E8B3B2af53907f5e533Cba2Ce7BE
+  // mainnet LockDealNFT - 0x3d2C83bbBbfB54087d46B80585253077509c21AE
+  const lockDealNFt = "0xe42876a77108E8B3B2af53907f5e533Cba2Ce7BE"
 
-  const lockedAmount = ethers.parseEther("0.001");
+  const Web3WarsFix = await ethers.getContractFactory("Web3WarsFix");
+  const web3WarsFix = await Web3WarsFix.deploy(lockDealNFt);
+  await web3WarsFix.deployed();
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  console.log("Web3WarsFix deployed to:", web3WarsFix.address);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
