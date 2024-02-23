@@ -7,7 +7,7 @@ import { deployed } from "@poolzfinance/poolz-helper-v2"
 import { expect } from "chai"
 import { ethers } from "hardhat"
 
-describe("Web3WarsFix tests", function () {
+describe("Firewall tests", function () {
     let lockProvider: LockDealProvider
     let lockDealNFT: LockDealNFT
     let web3WarsFix: Web3WarsFix

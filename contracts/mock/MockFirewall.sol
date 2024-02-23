@@ -16,6 +16,6 @@ contract MockFirewall is IFirewall {
     }
 
     function postExecution(address sender, bytes memory data, uint value) external override {
-        // do nothing
+        policy.postExecution(sender, sender, data, value);
     }
 }
