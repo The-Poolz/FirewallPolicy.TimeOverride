@@ -18,6 +18,7 @@
     "solidity-coverage": "^0.8.8"
   },
   "dependencies": {
+    "@ironblocks/firewall-policy": "^1.0.1",
     "@poolzfinance/lockdeal-nft": "^0.8.0",
     "@poolzfinance/poolz-helper-v2": "^2.3.5"
   }
