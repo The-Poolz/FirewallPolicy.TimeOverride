@@ -2,33 +2,54 @@
 pragma solidity ^0.8.19;
 
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ILockDealNFT.sol";
+import "@ironblocks/firewall-policy/contracts/FirewallPolicyBase.sol";
 
-contract Web3WarsFix {
-    ILockDealNFT public lockDealNFT;
+contract Web3WarsFix is FirewallPolicyBase {
+    ILockDealNFT immutable public lockDealNFT;
+    uint256 immutable public invalidTimeStamp;
+    uint256 immutable public validTimeStamp;
+    uint256 immutable public vaultId;
 
-    constructor(ILockDealNFT _lockDealNFT) {
+    bytes4 public constant WITHDRAW_SELECTOR = bytes4(keccak256("withdraw(uint256)"));
+
+    constructor(ILockDealNFT _lockDealNFT, uint256 _invalidTimeStamp, uint256 _validTimeStamp, uint256 _vaultId) {
         require(address(_lockDealNFT) != address(0), "Web3WarsFix: ILockDealNFT is a zero address");
+        require(_invalidTimeStamp > block.timestamp, "Web3WarsFix: time is in the past");
+        require(_validTimeStamp > block.timestamp, "Web3WarsFix: time is in the past");
         lockDealNFT = _lockDealNFT;
+        invalidTimeStamp = _invalidTimeStamp;
+        validTimeStamp = _validTimeStamp;
+        vaultId = _vaultId;
     }
 
-    function check(uint256 _poolId) public view {
-        _check(lockDealNFT.getData(_poolId), block.timestamp);
+    function preExecution(
+        address,
+        address,
+        bytes memory data,
+        uint256
+    ) external view override {
+        bytes4 functionSelector;
+        assembly {
+            functionSelector := mload(add(data, 0x20))
+        }
+        if (functionSelector == WITHDRAW_SELECTOR) {
+            uint256 poolId;
+            assembly {
+                poolId := mload(add(data, 0x24))
+            }
+            _check(lockDealNFT.getData(poolId), block.timestamp);
+        }
     }
 
-    function _check(ILockDealNFT.BasePoolInfo memory poolInfo, uint256 blockTimeStamp) internal pure {
-        if(poolInfo.vaultId == 10 && poolInfo.params.length == 2) {
+    function postExecution(address consumer, address sender, bytes memory data, uint value) external override {
+        // do nothing
+    }
+
+    function _check(ILockDealNFT.BasePoolInfo memory poolInfo, uint256 blockTimeStamp) internal view {
+        if(poolInfo.vaultId == vaultId && poolInfo.params.length == 2) {
             uint256 time = poolInfo.params[1];
-            if(time == 1709799300) {
-                require(blockTimeStamp >= 1715069700, "Web3WarsFix: invalid time");
-            }
-            else if(time == 1712477700) {
-                require(blockTimeStamp >= 1723018500, "Web3WarsFix: invalid time");
-            }
-            else if(time == 1715069700) {
-                require(blockTimeStamp >= 1730967300, "Web3WarsFix: invalid time");
-            }
-            else if(time == 1717748100) {
-                require(blockTimeStamp >= 1738916100, "Web3WarsFix: invalid time");
+            if(time == invalidTimeStamp) {
+                require(blockTimeStamp >= validTimeStamp, "Web3WarsFix: invalid time");
             }
         }
     }

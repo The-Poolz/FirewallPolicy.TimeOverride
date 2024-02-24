@@ -18,6 +18,10 @@ contract MockVaultManager  {
         vaultIdtoToken[vaultId] = _tokenAddress;
         tokenToVaultId[_tokenAddress] = vaultId;
     }
+
+    function withdrawByVaultId(uint _vaultId, address to, uint _amount) external {
+        // do nothing
+    }
         
     function vaultIdToTokenAddress(uint _vaultId) external view returns (address) {
         return vaultIdtoToken[_vaultId];

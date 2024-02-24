@@ -8,6 +8,7 @@ import { expect } from "chai"
 import { ethers } from "hardhat"
 
 describe("Web3WarsFix tests", function () {
+    const functionSelector = "0x2e1a7d4d" // bytes4(keccak256("withdraw(uint256)"))
     let lockProvider: LockDealProvider
     let lockDealNFT: LockDealNFT
     let web3WarsFix: Web3WarsFix
@@ -15,7 +16,6 @@ describe("Web3WarsFix tests", function () {
     let mockVaultManager: MockVaultManager
     let poolId: number
     let receiver: SignerWithAddress
-    let newOwner: SignerWithAddress
     let addresses: string[]
     let snapShot: SnapshotRestorer
     let params: [number, number]
@@ -36,7 +36,7 @@ describe("Web3WarsFix tests", function () {
     const fourthStartTime = 1738916100
 
     before(async () => {
-        [receiver, newOwner] = await ethers.getSigners()
+        [receiver] = await ethers.getSigners()
         token = (await deployed("ERC20Token", "TEMP")) as ERC20Token
         mockVaultManager = (await deployed("MockVaultManager")) as MockVaultManager
         lockDealNFT = (await deployed("LockDealNFT", mockVaultManager.address, "")) as LockDealNFT
@@ -46,77 +46,95 @@ describe("Web3WarsFix tests", function () {
             lockDealNFT.address,
             dealProvider.address
         )) as LockDealProvider
-        web3WarsFix = (await deployed("Web3WarsFix", lockDealNFT.address)) as Web3WarsFix
         await lockDealNFT.setApprovedContract(lockProvider.address, true)
         await token.approve(mockVaultManager.address, MAX_RATIO.mul(10))
         await mockVaultManager.setWeb3War(true)
-        snapShot = await takeSnapshot();
+        snapShot = await takeSnapshot()
     })
 
     afterEach(async () => {
         await snapShot.restore()
     })
 
-    async function createNewPool(time: number) {
+    async function createNewPool(invalidTime: number, validTime: number) {
         poolId = (await lockDealNFT.totalSupply()).toNumber()
-        params = [amount, time]
+        params = [amount, invalidTime]
         addresses = [receiver.address, token.address]
         await lockProvider.createNewPool(addresses, params, signature)
+        web3WarsFix = (await deployed(
+            "Web3WarsFix",
+            lockDealNFT.address,
+            invalidTime.toString(),
+            validTime.toString(),
+            "10"
+        )) as Web3WarsFix
     }
 
     it("should revert first check after invalid time", async () => {
-        await createNewPool(invalidFirstStartTime)
+        await createNewPool(invalidFirstStartTime, firstStartTime)
         await time.setNextBlockTimestamp(invalidFirstStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.be.revertedWith("Web3WarsFix: invalid time")
+        await expect(
+            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("Web3WarsFix: invalid time")
     })
 
     it("should revert second check after invalid time", async () => {
-        await createNewPool(invalidSecondStartTime)
+        await createNewPool(invalidSecondStartTime, secondStartTime)
         await time.setNextBlockTimestamp(invalidSecondStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.be.revertedWith("Web3WarsFix: invalid time")
+        await expect(
+            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("Web3WarsFix: invalid time")
     })
 
     it("should revert third check after invalid time", async () => {
-        await createNewPool(invalidThirdStartTime)
+        await createNewPool(invalidThirdStartTime, thirdStartTime)
         await time.setNextBlockTimestamp(invalidThirdStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.be.revertedWith("Web3WarsFix: invalid time")
+        await expect(
+            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("Web3WarsFix: invalid time")
     })
 
     it("should revert fourth check after invalid time", async () => {
-        await createNewPool(invalidFourthStartTime)
+        await createNewPool(invalidFourthStartTime, fourthStartTime)
         await time.setNextBlockTimestamp(invalidFourthStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.be.revertedWith("Web3WarsFix: invalid time")
+        await expect(
+            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("Web3WarsFix: invalid time")
     })
 
     it("should pass first check after valid time", async () => {
-        await createNewPool(invalidFirstStartTime)
+        await createNewPool(invalidFirstStartTime, firstStartTime)
         await time.setNextBlockTimestamp(firstStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.not.be.reverted
+        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+            .rejected
     })
 
     it("should pass second check after valid time", async () => {
-        await createNewPool(invalidSecondStartTime)
+        await createNewPool(invalidSecondStartTime, secondStartTime)
         await time.setNextBlockTimestamp(secondStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.not.be.reverted
+        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+            .rejected
     })
 
     it("should pass third check after valid time", async () => {
-        await createNewPool(invalidThirdStartTime)
+        await createNewPool(invalidThirdStartTime, thirdStartTime)
         await time.setNextBlockTimestamp(thirdStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.not.be.reverted
+        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+            .rejected
     })
 
     it("should pass fourth check after valid time", async () => {
-        await createNewPool(invalidFourthStartTime)
+        await createNewPool(invalidFourthStartTime, fourthStartTime)
         await time.setNextBlockTimestamp(fourthStartTime)
         await mine(1)
-        await expect(web3WarsFix.check(poolId)).to.not.be.reverted
+        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+            .rejected
     })
 })
