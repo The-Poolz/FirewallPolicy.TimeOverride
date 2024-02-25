@@ -1,4 +1,4 @@
-# Web3War-Fix
+# FirewallPolicy.LockDealProvider.LockTimeOverride
 
 ## Installation
 
@@ -35,3 +35,7 @@ truffle dashboard
 ```console
 npx hardhat run ./scripts/deploy.ts --network truffleDashboard
 ```
+
+## description
+
+This repository utilizes `FirewallPolicyBase` to define a policy that extends the locking time for the lock deal provider. Specifically, it transitions from an invalid timestamp to a valid timestamp for a designated vault ID.
