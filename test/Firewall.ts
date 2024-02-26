@@ -1,4 +1,4 @@
-import { ERC20Token, MockFirewall, MockVaultManager, Web3WarsFix } from "../typechain-types"
+import { ERC20Token, MockFirewall, MockVaultManager, LockTimeOverride } from "../typechain-types"
 import { LockDealNFT } from "../typechain-types"
 import { LockDealProvider, DealProvider } from "../typechain-types"
 import { time, mine, takeSnapshot, SnapshotRestorer } from "@nomicfoundation/hardhat-network-helpers"
@@ -10,7 +10,7 @@ import { ethers } from "hardhat"
 describe("Firewall tests", function () {
     let lockProvider: LockDealProvider
     let lockDealNFT: LockDealNFT
-    let web3WarsFix: Web3WarsFix
+    let lockTimeOverride: LockTimeOverride
     let firewall: MockFirewall
     let token: ERC20Token
     let mockVaultManager: MockVaultManager
@@ -18,7 +18,7 @@ describe("Firewall tests", function () {
     let receiver: SignerWithAddress
     let addresses: string[]
     let snapShot: SnapshotRestorer
-    let params: [number, number]
+    let params: [string, number]
     const amount = ethers.utils.parseUnits("1", 18)
     const MAX_RATIO = ethers.utils.parseUnits("1", 21)
     const signature: Uint8Array = ethers.utils.toUtf8Bytes("signature")
@@ -38,14 +38,14 @@ describe("Firewall tests", function () {
         )) as LockDealProvider
         await lockDealNFT.setApprovedContract(lockProvider.address, true)
         await token.approve(mockVaultManager.address, MAX_RATIO.mul(10))
-        web3WarsFix = (await deployed(
-            "Web3WarsFix",
+        lockTimeOverride = (await deployed(
+            "LockTimeOverride",
             lockDealNFT.address,
             invalidFirstStartTime.toString(),
             firstStartTime.toString(),
             "10"
-        )) as Web3WarsFix
-        firewall = (await deployed("MockFirewall", web3WarsFix.address)) as MockFirewall
+        )) as LockTimeOverride
+        firewall = (await deployed("MockFirewall", lockTimeOverride.address)) as MockFirewall
         await mockVaultManager.setWeb3War(true)
         await lockProvider.setFirewall(firewall.address)
         snapShot = await takeSnapshot()
@@ -57,7 +57,7 @@ describe("Firewall tests", function () {
 
     async function createNewPool(invalidTime: number) {
         poolId = (await lockDealNFT.totalSupply()).toNumber()
-        params = [amount, invalidTime]
+        params = [amount.toString(), invalidTime]
         addresses = [receiver.address, token.address]
         await lockProvider.createNewPool(addresses, params, signature)
     }
@@ -69,7 +69,7 @@ describe("Firewall tests", function () {
             lockDealNFT
                 .connect(receiver)
                 ["safeTransferFrom(address,address,uint256)"](receiver.address, lockDealNFT.address, poolId)
-        ).to.be.rejectedWith("Web3WarsFix: invalid time")
+        ).to.be.rejectedWith("LockTimeOverride: invalid time")
     })
 
     it("should pass withdraw tokens after valid time", async () => {
