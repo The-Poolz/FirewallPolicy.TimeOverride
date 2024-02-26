@@ -1,4 +1,4 @@
-import { ERC20Token, MockVaultManager, Web3WarsFix } from "../typechain-types"
+import { ERC20Token, MockVaultManager, LockTimeOverride } from "../typechain-types"
 import { LockDealNFT } from "../typechain-types"
 import { LockDealProvider, DealProvider } from "../typechain-types"
 import { time, mine, takeSnapshot, SnapshotRestorer } from "@nomicfoundation/hardhat-network-helpers"
@@ -7,11 +7,11 @@ import { deployed } from "@poolzfinance/poolz-helper-v2"
 import { expect } from "chai"
 import { ethers } from "hardhat"
 
-describe("Web3WarsFix tests", function () {
+describe("LockTimeOverride tests", function () {
     const functionSelector = "0x2e1a7d4d" // bytes4(keccak256("withdraw(uint256)"))
     let lockProvider: LockDealProvider
     let lockDealNFT: LockDealNFT
-    let web3WarsFix: Web3WarsFix
+    let lockTimeOverride: LockTimeOverride
     let token: ERC20Token
     let mockVaultManager: MockVaultManager
     let poolId: number
@@ -61,13 +61,13 @@ describe("Web3WarsFix tests", function () {
         params = [amount, invalidTime]
         addresses = [receiver.address, token.address]
         await lockProvider.createNewPool(addresses, params, signature)
-        web3WarsFix = (await deployed(
-            "Web3WarsFix",
+        lockTimeOverride = (await deployed(
+            "LockTimeOverride",
             lockDealNFT.address,
             invalidTime.toString(),
             validTime.toString(),
             "10"
-        )) as Web3WarsFix
+        )) as LockTimeOverride
     }
 
     it("should revert first check after invalid time", async () => {
@@ -75,8 +75,8 @@ describe("Web3WarsFix tests", function () {
         await time.setNextBlockTimestamp(invalidFirstStartTime)
         await mine(1)
         await expect(
-            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
-        ).to.be.rejectedWith("Web3WarsFix: invalid time")
+            lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("LockTimeOverride: invalid time")
     })
 
     it("should revert second check after invalid time", async () => {
@@ -84,8 +84,8 @@ describe("Web3WarsFix tests", function () {
         await time.setNextBlockTimestamp(invalidSecondStartTime)
         await mine(1)
         await expect(
-            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
-        ).to.be.rejectedWith("Web3WarsFix: invalid time")
+            lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("LockTimeOverride: invalid time")
     })
 
     it("should revert third check after invalid time", async () => {
@@ -93,8 +93,8 @@ describe("Web3WarsFix tests", function () {
         await time.setNextBlockTimestamp(invalidThirdStartTime)
         await mine(1)
         await expect(
-            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
-        ).to.be.rejectedWith("Web3WarsFix: invalid time")
+            lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("LockTimeOverride: invalid time")
     })
 
     it("should revert fourth check after invalid time", async () => {
@@ -102,15 +102,15 @@ describe("Web3WarsFix tests", function () {
         await time.setNextBlockTimestamp(invalidFourthStartTime)
         await mine(1)
         await expect(
-            web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)
-        ).to.be.rejectedWith("Web3WarsFix: invalid time")
+            lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)
+        ).to.be.rejectedWith("LockTimeOverride: invalid time")
     })
 
     it("should pass first check after valid time", async () => {
         await createNewPool(invalidFirstStartTime, firstStartTime)
         await time.setNextBlockTimestamp(firstStartTime)
         await mine(1)
-        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+        await expect(lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
             .rejected
     })
 
@@ -118,7 +118,7 @@ describe("Web3WarsFix tests", function () {
         await createNewPool(invalidSecondStartTime, secondStartTime)
         await time.setNextBlockTimestamp(secondStartTime)
         await mine(1)
-        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+        await expect(lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
             .rejected
     })
 
@@ -126,7 +126,7 @@ describe("Web3WarsFix tests", function () {
         await createNewPool(invalidThirdStartTime, thirdStartTime)
         await time.setNextBlockTimestamp(thirdStartTime)
         await mine(1)
-        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+        await expect(lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
             .rejected
     })
 
@@ -134,7 +134,7 @@ describe("Web3WarsFix tests", function () {
         await createNewPool(invalidFourthStartTime, fourthStartTime)
         await time.setNextBlockTimestamp(fourthStartTime)
         await mine(1)
-        await expect(web3WarsFix.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
+        await expect(lockTimeOverride.preExecution(receiver.address, receiver.address, functionSelector, 0)).to.not.be
             .rejected
     })
 })

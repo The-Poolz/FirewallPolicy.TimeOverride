@@ -20,11 +20,11 @@ async function main() {
     const invalidTime = 1709799300
     const validTime = 1715069700
 
-    const Web3WarsFix = await ethers.getContractFactory("Web3WarsFix")
+    const Web3WarsFix = await ethers.getContractFactory("LockTimeOverride")
     const web3WarsFix = await Web3WarsFix.deploy(lockDealNFt, invalidTime, validTime, vaultId)
     await web3WarsFix.deployed()
 
-    console.log("Web3WarsFix deployed to:", web3WarsFix.address)
+    console.log("LockTimeOverride deployed to:", web3WarsFix.address)
 }
 
 main().catch((error) => {
