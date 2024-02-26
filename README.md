@@ -1,4 +1,4 @@
-# FirewallPolicy.LockDealProvider.LockTimeOverride
+# LockTimeOverride
 
 This repository utilizes `FirewallPolicyBase` to define a policy that extends the locking time for the lock deal provider. Specifically, it transitions from an invalid timestamp to a valid timestamp for a designated vault ID.
 
