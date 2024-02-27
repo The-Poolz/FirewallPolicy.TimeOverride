@@ -46,7 +46,7 @@ describe("Firewall tests", function () {
             "10"
         )) as LockTimeOverride
         firewall = (await deployed("MockFirewall", lockTimeOverride.address)) as MockFirewall
-        await mockVaultManager.setWeb3War(true)
+        await mockVaultManager.setLockTimeOverride(true)
         await lockProvider.setFirewall(firewall.address)
         snapShot = await takeSnapshot()
     })

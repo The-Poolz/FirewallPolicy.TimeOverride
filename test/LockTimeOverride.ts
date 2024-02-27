@@ -48,7 +48,7 @@ describe("LockTimeOverride tests", function () {
         )) as LockDealProvider
         await lockDealNFT.setApprovedContract(lockProvider.address, true)
         await token.approve(mockVaultManager.address, MAX_RATIO.mul(10))
-        await mockVaultManager.setWeb3War(true)
+        await mockVaultManager.setLockTimeOverride(true)
         snapShot = await takeSnapshot()
     })
 
