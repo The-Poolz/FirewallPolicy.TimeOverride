@@ -25,13 +25,14 @@ describe("RefundTimeOverride tests", function () {
     let addresses: string[]
     let snapShot: SnapshotRestorer
     let collateralPoolId: number
-    let params: [BigNumber, number, number, BigNumber, number]
+    let params: [BigNumber, number, BigNumber, number]
     const tokenAmount = ethers.utils.parseEther("1000000")
     const mainCoinAmount = ethers.utils.parseEther("200000")
     const MAX_RATIO = ethers.utils.parseUnits("1", 21)
     const signature: Uint8Array = ethers.utils.toUtf8Bytes("signature")
-    let startTime: number, finishTime: number
     const validTimeStamp = 1735686061
+    let startTime: number,
+        finishTime: number = validTimeStamp
     const ONE_DAY = 86400
 
     before(async () => {
@@ -59,8 +60,8 @@ describe("RefundTimeOverride tests", function () {
 
     beforeEach(async () => {
         startTime = (await time.latest()) + ONE_DAY // plus 1 day
-        finishTime = startTime + 7 * ONE_DAY // plus 7 days from `startTime`
-        params = [tokenAmount, startTime, finishTime, mainCoinAmount, finishTime]
+        const invalidFinishTime = finishTime + ONE_DAY * 3 // plus 3 days
+        params = [tokenAmount, startTime, mainCoinAmount, invalidFinishTime]
         addresses = [receiver.address, token.address, stableCoin.address, lockProvider.address]
         poolId = (await lockDealNFT.totalSupply()).toNumber()
         collateralPoolId = poolId + 2
@@ -72,6 +73,7 @@ describe("RefundTimeOverride tests", function () {
             collateralPoolId.toString()
         )) as RefundTimeOverride
         firewall = (await deployed("MockFirewall", refundTimeOverride.address)) as MockFirewall
+        await collateralProvider.setFirewall(firewall.address)
     })
 
     afterEach(async () => {
@@ -84,5 +86,47 @@ describe("RefundTimeOverride tests", function () {
         const event = await collateralProvider.queryFilter(collateralProvider.filters.FirewallUpdated())
         const data = event[event.length - 1].args
         expect(data.newFirewall).to.equal(firewall.address)
+    })
+
+    it("should refund tokens before valid time", async () => {
+        await time.setNextBlockTimestamp(validTimeStamp - 1)
+        const balanceBefore = await lockDealNFT["balanceOf(address)"](refundProvider.address)
+        await lockDealNFT["safeTransferFrom(address,address,uint256)"](receiver.address, refundProvider.address, poolId)
+        expect(await lockDealNFT["balanceOf(address)"](refundProvider.address)).to.equal(balanceBefore.add(1))
+    })
+
+    it("should revert refund tokens after valid time", async () => {
+        await time.setNextBlockTimestamp(validTimeStamp + 1)
+        await expect(
+            lockDealNFT["safeTransferFrom(address,address,uint256)"](receiver.address, refundProvider.address, poolId)
+        ).to.be.revertedWithCustomError(refundTimeOverride, "InvalidTime")
+    })
+
+    it("should revert empty LockDealNFT address", async () => {
+        await expect(
+            deployed(
+                "RefundTimeOverride",
+                ethers.constants.AddressZero,
+                validTimeStamp.toString(),
+                collateralPoolId.toString()
+            )
+        ).to.be.revertedWithCustomError(refundTimeOverride, "ZeroAddress")
+    })
+
+    it("should revert zero collateral pool id", async () => {
+        await expect(
+            deployed("RefundTimeOverride", lockDealNFT.address, validTimeStamp.toString(), "0")
+        ).to.be.revertedWithCustomError(refundTimeOverride, "ZeroPoolId")
+    })
+
+    it("should revert past time", async () => {
+        await expect(
+            deployed(
+                "RefundTimeOverride",
+                lockDealNFT.address,
+                (await time.latest() - 100).toString(),
+                collateralPoolId.toString()
+            )
+        ).to.be.revertedWithCustomError(refundTimeOverride, "InvalidTime")
     })
 })
