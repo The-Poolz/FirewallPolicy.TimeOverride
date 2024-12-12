@@ -22,8 +22,8 @@ describe("Firewall tests", function () {
     const amount = ethers.utils.parseUnits("1", 18)
     const MAX_RATIO = ethers.utils.parseUnits("1", 21)
     const signature: Uint8Array = ethers.utils.toUtf8Bytes("signature")
-    const invalidFirstStartTime = 1709799300
-    const firstStartTime = 1715069700
+    const invalidFirstStartTime = 1776169700
+    const firstStartTime = 1786169700
 
     before(async () => {
         [receiver] = await ethers.getSigners()

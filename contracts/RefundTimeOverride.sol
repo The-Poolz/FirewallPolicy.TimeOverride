@@ -42,7 +42,7 @@ contract RefundTimeOverride is FirewallPolicyBase {
             assembly {
                 poolId := mload(add(data, 0x24))
             }
-            _check(poolId, block.timestamp);
+            _check(poolId);
         }
     }
 
@@ -55,8 +55,8 @@ contract RefundTimeOverride is FirewallPolicyBase {
         // do nothing
     }
 
-    function _check(uint256 poolId, uint256 timestamp) private view {
-        if (poolId == collateralPoolId && timestamp >= validTimeStamp) {
+    function _check(uint256 poolId) private view {
+        if (poolId == collateralPoolId && block.timestamp >= validTimeStamp) {
             revert InvalidTime();
         }
     }
