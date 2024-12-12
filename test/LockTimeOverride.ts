@@ -24,16 +24,16 @@ describe("LockTimeOverride tests", function () {
     const signature: Uint8Array = ethers.utils.toUtf8Bytes("signature")
 
     // invalid predefined start times
-    const invalidFirstStartTime = 1709799300
-    const invalidSecondStartTime = 1712477700
-    const invalidThirdStartTime = 1715069700
-    const invalidFourthStartTime = 1717748100
+    const invalidFirstStartTime = 1776169700
+    const invalidSecondStartTime = 1777169700
+    const invalidThirdStartTime = 1778169700
+    const invalidFourthStartTime = 1779169700
 
     // valid predefined start times
-    const firstStartTime = 1715069700
-    const secondStartTime = 1723018500
-    const thirdStartTime = 1730967300
-    const fourthStartTime = 1738916100
+    const firstStartTime = 1786169700
+    const secondStartTime = 1787169700
+    const thirdStartTime = 1797169700
+    const fourthStartTime = 1807169700
 
     before(async () => {
         [receiver] = await ethers.getSigners()

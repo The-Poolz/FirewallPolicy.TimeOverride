@@ -35,5 +35,5 @@ truffle dashboard
 ```
 
 ```console
-npx hardhat run ./scripts/deploy.ts --network truffleDashboard
+npx hardhat run ./scripts/deployRefundTime.ts --network truffleDashboard
 ```
