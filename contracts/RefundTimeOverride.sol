@@ -20,7 +20,6 @@ contract RefundTimeOverride is FirewallPolicyBase {
         uint256 _validTimeStamp,
         uint256 _collateralPoolId
     ) {
-        if (_validTimeStamp < block.timestamp) revert InvalidTime();
         if (_collateralPoolId == 0) revert ZeroPoolId();
         validTimeStamp = _validTimeStamp;
         collateralPoolId = _collateralPoolId;
