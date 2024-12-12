@@ -9,11 +9,11 @@ contract RefundTimeOverride is FirewallPolicyBase {
     uint256 public immutable validTimeStamp;
     uint256 public immutable collateralPoolId;
 
-    bytes4 public constant REFUND_SELECTOR =
-        bytes4(keccak256("handleRefund(uint256,address,uint256)"));
+    bytes4 public constant REFUND_SELECTOR = bytes4(keccak256("handleRefund(uint256,address,uint256)"));
 
     error InvalidTime();
     error ZeroAddress();
+    error ZeroPoolId();
 
     constructor(
         ILockDealNFT _lockDealNFT,
@@ -22,6 +22,7 @@ contract RefundTimeOverride is FirewallPolicyBase {
     ) {
         if (address(_lockDealNFT) == address(0)) revert ZeroAddress();
         if (_validTimeStamp < block.timestamp) revert InvalidTime();
+        if (_collateralPoolId == 0) revert ZeroPoolId();
         lockDealNFT = _lockDealNFT;
         validTimeStamp = _validTimeStamp;
         collateralPoolId = _collateralPoolId;
@@ -56,7 +57,7 @@ contract RefundTimeOverride is FirewallPolicyBase {
     }
 
     function _check(uint256 poolId) private view {
-        if (poolId == collateralPoolId && block.timestamp >= validTimeStamp) {
+        if (poolId == collateralPoolId && block.timestamp > validTimeStamp) {
             revert InvalidTime();
         }
     }
