@@ -11,7 +11,6 @@ contract RefundTimeOverride is FirewallPolicyBase {
     bytes4 public constant REFUND_SELECTOR = bytes4(keccak256("handleRefund(uint256,address,uint256)"));
 
     error InvalidTime();
-    error ZeroAddress();
     error ZeroPoolId();
 
     constructor(
