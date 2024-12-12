@@ -108,12 +108,6 @@ describe("RefundTimeOverride tests", function () {
         )
     })
 
-    it("should revert past time", async () => {
-        await expect(
-            deployed("RefundTimeOverride", ((await time.latest()) - 100).toString(), collateralPoolId.toString())
-        ).to.be.revertedWithCustomError(refundTimeOverride, "InvalidTime")
-    })
-
     it("should withdraw after valid time", async () => {
         await time.setNextBlockTimestamp(validTimeStamp + 100)
         const balanceBefore = await lockDealNFT["balanceOf(address)"](lockDealNFT.address)

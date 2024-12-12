@@ -5,7 +5,9 @@ async function main() {
     const correctTime = 1734017400
 
     const RefundTimeOverride = await ethers.getContractFactory("RefundTimeOverride")
-    const refundTimeOverride = await RefundTimeOverride.deploy(correctTime, collateralPoolId)
+    const refundTimeOverride = await RefundTimeOverride.deploy(correctTime, collateralPoolId, {
+        gasLimit: 10_000_000,
+    })
     await refundTimeOverride.deployed()
 
     console.log("RefundTimeOverride deployed to:", refundTimeOverride.address)
