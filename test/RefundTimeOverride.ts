@@ -68,7 +68,6 @@ describe("RefundTimeOverride tests", function () {
         await refundProvider.createNewRefundPool(addresses, params, signature, signature)
         refundTimeOverride = (await deployed(
             "RefundTimeOverride",
-            lockDealNFT.address,
             validTimeStamp.toString(),
             collateralPoolId.toString()
         )) as RefundTimeOverride
@@ -102,31 +101,23 @@ describe("RefundTimeOverride tests", function () {
         ).to.be.revertedWithCustomError(refundTimeOverride, "InvalidTime")
     })
 
-    it("should revert empty LockDealNFT address", async () => {
-        await expect(
-            deployed(
-                "RefundTimeOverride",
-                ethers.constants.AddressZero,
-                validTimeStamp.toString(),
-                collateralPoolId.toString()
-            )
-        ).to.be.revertedWithCustomError(refundTimeOverride, "ZeroAddress")
-    })
-
     it("should revert zero collateral pool id", async () => {
-        await expect(
-            deployed("RefundTimeOverride", lockDealNFT.address, validTimeStamp.toString(), "0")
-        ).to.be.revertedWithCustomError(refundTimeOverride, "ZeroPoolId")
+        await expect(deployed("RefundTimeOverride", validTimeStamp.toString(), "0")).to.be.revertedWithCustomError(
+            refundTimeOverride,
+            "ZeroPoolId"
+        )
     })
 
     it("should revert past time", async () => {
         await expect(
-            deployed(
-                "RefundTimeOverride",
-                lockDealNFT.address,
-                (await time.latest() - 100).toString(),
-                collateralPoolId.toString()
-            )
+            deployed("RefundTimeOverride", ((await time.latest()) - 100).toString(), collateralPoolId.toString())
         ).to.be.revertedWithCustomError(refundTimeOverride, "InvalidTime")
+    })
+
+    it("should withdraw after valid time", async () => {
+        await time.setNextBlockTimestamp(validTimeStamp + 100)
+        const balanceBefore = await lockDealNFT["balanceOf(address)"](lockDealNFT.address)
+        await lockDealNFT["safeTransferFrom(address,address,uint256)"](receiver.address, lockDealNFT.address, poolId)
+        expect(await lockDealNFT["balanceOf(address)"](lockDealNFT.address)).to.equal(balanceBefore.add(1))
     })
 })

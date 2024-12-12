@@ -5,7 +5,6 @@ import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ILockDealNFT.sol";
 import "@ironblocks/firewall-policy/contracts/FirewallPolicyBase.sol";
 
 contract RefundTimeOverride is FirewallPolicyBase {
-    ILockDealNFT public immutable lockDealNFT;
     uint256 public immutable validTimeStamp;
     uint256 public immutable collateralPoolId;
 
@@ -16,14 +15,11 @@ contract RefundTimeOverride is FirewallPolicyBase {
     error ZeroPoolId();
 
     constructor(
-        ILockDealNFT _lockDealNFT,
         uint256 _validTimeStamp,
         uint256 _collateralPoolId
     ) {
-        if (address(_lockDealNFT) == address(0)) revert ZeroAddress();
         if (_validTimeStamp < block.timestamp) revert InvalidTime();
         if (_collateralPoolId == 0) revert ZeroPoolId();
-        lockDealNFT = _lockDealNFT;
         validTimeStamp = _validTimeStamp;
         collateralPoolId = _collateralPoolId;
     }
