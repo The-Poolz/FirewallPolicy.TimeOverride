@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 /// This policy outlines the procedures for addressing issues detailed in the following document:
-/// https://docs.google.com/document/d/1uhbRpDJbSKRSrwvVm-DJNTHlqsEaAG6tUbPAxh400xI/edit?tab=t.0
+/// https://docs.google.com/document/d/1uhbRpDJbSKRSrwvVm-DJNTHlqsEaAG6tUbPAxh400xI
 
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ILockDealNFT.sol";
 import "@ironblocks/firewall-policy/contracts/FirewallPolicyBase.sol";
